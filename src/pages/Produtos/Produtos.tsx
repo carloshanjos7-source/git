@@ -1,18 +1,12 @@
 import './Produtos.css';
-import Banner_1 from '../../assets/imgs/banner.png';
-import Banner_2 from '../../assets/imgs/banner2.png';
-import Banner_3 from '../../assets/imgs/banner3.png';
-import choc_belga from '../../assets/imgs/choc-belga.png';
-import choc_ninho from '../../assets/imgs/choc-belga.png';
-import cenoura_choc from '../../assets/imgs/cenoura-choc.png';
-import choc_ninho_morango from '../../assets/imgs/choc-ninho-morango.png';
-import choc_pistache from '../../assets/imgs/choc-pistache.png';
-import choc_oreo from '../../assets/imgs/choc-oreo.png';
 import whatsapp from '../../assets/whatsapp.png';
 import { useEffect, useState } from 'react';
 import type { Bolo } from '../../types/Bolo';
 import { getBolos } from '../../services/bolosServices';
 import CardProduto from '../../components/CardProduto/CardProduto';
+import Carrossel from '../../components/Carrossel/Carrossel';
+import Header from '../../components/Header/Header';
+import { useLocation } from 'react-router-dom';
 
 
 // funções assincronas
@@ -20,12 +14,26 @@ import CardProduto from '../../components/CardProduto/CardProduto';
 export default function Produtos() {
 
     const [bolos, setBolos] = useState<Bolo[]>([]);
+    const location = useLocation();
+
+    const parametrosPesquisados = new URLSearchParams(location.search);
+    const termo_pesquisado = parametrosPesquisados.get('query');
 
     const fetchBolos = async () => {
         try {
             const dados = await getBolos();
+            if (termo_pesquisado) {
+                const dados_filtrados = dados.filter(b =>
+                b.nome.toLowerCase().includes(termo_pesquisado.toLowerCase()) ||
+                b.descricao.toLowerCase().includes(termo_pesquisado.toLowerCase()) ||
+                b.categorias.some(cat => cat.toLowerCase()
+            .includes(termo_pesquisado.toLowerCase()))
+            )
+            setBolos(dados_filtrados)
+        }else{
             console.log("Dados retornados da API: ", dados);
             setBolos(dados);
+         }
         } catch (error) {
             console.error("Erro ao executar getBolos: ", error)
         }
@@ -33,67 +41,53 @@ export default function Produtos() {
 
     useEffect(() => {
         fetchBolos();
+        console.log("Termo pesquisado: ", termo_pesquisado);
+    }, [termo_pesquisado])
 
-    }, [])
 
 
     return (
-        <main>
+        <>
+            <Header />
+            <main>
 
-            <div id="carouselExampleAutoplaying" className="carousel slide" data-bs-ride="carousel">
-                <div className="carousel-inner">
-                    <div className="carousel-item active">
-                        <img src={Banner_1} className="d-block w-100" alt="..." />
+
+                <Carrossel />
+                <section className="container_produto'">
+                    <h1 className="acessivel">produtos de chocolate</h1>
+                    <div className="titulo">
+                        <span>
+                          {
+                            termo_pesquisado ? `Resultados para: ${termo_pesquisado}` :
+                            "Nome da cateoria"
+                          }  
+                        </span>
+                        <hr />
                     </div>
-                    <div className="carousel-item">
-                        <img src={Banner_2} className="d-block w-100" alt="..." />
-                    </div>
-                    <div className="carousel-item">
-                        <img src={Banner_3} className="d-block w-100" alt="..." />
-                    </div>
-                </div>
-                <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying"
-                    data-bs-slide="prev">
-                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span className="visually-hidden">Previous</span>
-                </button>
-                <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying"
-                    data-bs-slide="next">
-                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span className="visually-hidden">Next</span>
-                </button>
-            </div>
 
+                    <section className="cards">
 
-            <section className="container_produto'">
-                <h1 className="acessivel">produtos de chocolate</h1>
-                <div className="titulo">
-                    <span>Chocolate</span>
-                    <hr />
-                </div>
+                        {
+                            bolos.map((b: Bolo) => (
+                                <CardProduto
+                                    nome={b.nome}
+                                    descricao={b.descricao}
+                                    preco={b.preco}
+                                    imagem={b.imagens[0]}
+                                    peso={b.peso}
+                                />
+                            ))
+                        }
 
-                <section className="cards">
-
-                    {
-                        bolos.map((b: Bolo) => (
-                           <CardProduto 
-                           nome={b.nome} 
-                           descricao={b.descricao}
-                           preco={b.preco}
-                           imagem={b.imagens[0]}
-                           peso={b.peso}
-                           />
-                        ))
-                    }
-
+                    </section>
                 </section>
-            </section>
 
-            <a className="whatsapp" href="https://wa.me/5511999999999?text=Olá%20,%20gostaria%20de%20mais%20informações."
-                target="_blank">
-                <img src={whatsapp} alt="icone do whatsapp" />
-            </a>
-        </main>
+                <a className="whatsapp" href="https://wa.me/5511999999999?text=Olá%20,%20gostaria%20de%20mais%20informações."
+                    target="_blank">
+                    <img src={whatsapp} alt="icone do whatsapp" />
+                </a>
+            </main>
 
+        </>
     )
 }

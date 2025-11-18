@@ -5,8 +5,8 @@ import Banner_3 from '../../assets/imgs/banner3.png';
 export default function Carrossel() {
   return (
    
-  )
-}
+ 
+
 
 <div id="carouselExampleAutoplaying" className="carousel slide" data-bs-ride="carousel">
                 <div className="carousel-inner">
@@ -31,3 +31,8 @@ export default function Carrossel() {
                     <span className="visually-hidden">Next</span>
                 </button>
             </div>
+
+
+
+)
+}
